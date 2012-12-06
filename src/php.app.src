@@ -3,6 +3,7 @@
   {modules,
    [php, php_app, php_eval, php_sup, php_util]
   },
+  {vsn, "0.0.1"},
   {mod,
    {php_app,
 	[
