@@ -455,7 +455,9 @@ quote(Int) when is_integer(Int) ->
 quote(Float) when is_float(Float) ->
     float_to_list(Float);
 quote(Str) when is_list(Str) ->
-    quote(lists:flatten(Str), []).
+    quote(lists:flatten(Str), []);
+quote(Bin) when is_binary(Bin) ->
+    quote(binary_to_list(Bin)).
 
 quote([], Acc) ->
     "'" ++ lists:reverse(Acc) ++ "'";
