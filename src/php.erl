@@ -50,6 +50,7 @@
 	 reserve/0,reserve/1,
 	 release/1,
 	 call/2,
+   call/3,
 	 return/2,
 	 get_mem/1,
 	 restart_all/0,
@@ -158,14 +159,16 @@ eval(Code, Ref, Timeout) ->
 %% @doc Evaluates a function and returns the return value. Args are
 %%      automatically escaped.
 call(Func, Args) ->
-    call(Func, Args, []).
+    call(Func,Args, undefined).
+call(Func, Args, Ref) ->
+    eval("return "++Func++"("++lists:flatten(quote_args(Args))++");", Ref).
 
-call(Func, [], QuotedArgs) ->
-    eval("return "++Func++"("++lists:flatten(lists:reverse(QuotedArgs))++");");
-call(Func, [Arg], QuotedArgs) ->
-    call(Func, [], [quote(Arg) | QuotedArgs]);
-call(Func, [Arg | Args], QuotedArgs) ->
-    call(Func, Args, [$,, quote(Arg) | QuotedArgs]).
+quote_args(Args) ->
+    lists:reverse(quote_args(Args, [])).
+quote_args([Arg], QuotedArgs) ->
+    [quote(Arg) | QuotedArgs];
+quote_args([Arg | Rest], QuotedArgs) ->
+    quote_args(Rest, [$, , quote(Arg) | QuotedArgs]).
 
 %% @spec return (Function, Args) -> any()
 %%       Function = string()
