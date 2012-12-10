@@ -458,6 +458,8 @@ quote(Float) when is_float(Float) ->
     float_to_list(Float);
 quote(Str) when is_list(Str) ->
     quote(lists:flatten(Str), []);
+quote(At) when is_atom(At) ->
+    quote(atom_to_list(At));
 quote(Bin) when is_binary(Bin) ->
     quote(binary_to_list(Bin)).
 
