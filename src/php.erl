@@ -50,7 +50,8 @@
 	 reserve/0,reserve/1,
 	 release/1,
 	 call/2,
-   call/3,
+     call/3,
+     call/4,
 	 return/2,
 	 get_mem/1,
 	 restart_all/0,
@@ -161,7 +162,9 @@ eval(Code, Ref, Timeout) ->
 call(Func, Args) ->
     call(Func,Args, undefined).
 call(Func, Args, Ref) ->
-    eval("return "++Func++"("++lists:flatten(quote_args(Args))++");", Ref, infinity).
+    call(Func, Args, Ref, infinity).
+call(Func, Args, Ref, Timeout) ->
+    eval("return "++Func++"("++lists:flatten(quote_args(Args))++");", Ref, Timeout).
 
 quote_args(Args) ->
     lists:reverse(quote_args(Args, [])).
