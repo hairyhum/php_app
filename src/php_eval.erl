@@ -19,7 +19,14 @@
 -import(php_util,[get_opt/3]).
 
 %% port handler in PHP
--define(PHPLOOP, "ini_set('track_errors',true);do{ob_start();@$_C_=fread(STDIN,array_pop(unpack('N',fread(STDIN,4))));@trigger_error('');if(eval('return true;if(0){'.$_C_.'}')){$_R_=serialize(eval($_C_));}else{$_R_='E;';}$_R_.=serialize($php_errormsg);$_R_.=serialize(ob_get_clean());fwrite(STDOUT,pack('N',strlen($_R_)).$_R_);}while(!empty($_C_));exit;").
+-define(PHPLOOP, "ini_set('track_errors',true);do{ob_start();
+  @$len = array_pop(unpack('N',fread(STDIN,4)));@trigger_error('');
+  @$_C_=fread(STDIN,$len);@trigger_error('');
+  while(strlen($_C_) < $len){
+    $_C_.=fread(STDIN, $len - strlen($_C_));
+  } 
+  $len = null;
+  if(eval('return true;if(0){'.$_C_.'}')){$_R_=serialize(eval($_C_));}else{$_R_='E;';}$_R_.=serialize($php_errormsg);$_R_.=serialize(ob_get_clean());fwrite(STDOUT,pack('N',strlen($_R_)).$_R_);}while(!empty($_C_));exit;").
 
 -record(state, {
 	  port,
@@ -201,7 +208,8 @@ exec_php(Port, Code, Timeout) ->
     Port ! {self(), {command, unicode:characters_to_binary(Code)}},
     receive
 	{Port, {exit_status, Status}} -> {exit, Status};
-	{Port, {data, Data}}          -> {Return, Rest} = php_util:unserialize(Data),
+	{Port, {data, Data}}          -> 
+           {Return, Rest} = php_util:unserialize(Data),
 					 {Error, Rest2} = php_util:unserialize(Rest),
 					 {Output, _End} = php_util:unserialize(Rest2),
 					 case Return of
