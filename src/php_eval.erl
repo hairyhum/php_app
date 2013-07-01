@@ -37,7 +37,8 @@
 	}
 	$_R_['stderr']=$php_errormsg;
 	$_R_['stdout']=ob_get_clean();
-	$_J_=json_encode($_R_);
+	$_J_ = str_replace('\\/', '/', json_encode($_R_));
+
 	fwrite(STDOUT,pack('N',strlen($_J_)).$_J_);}while(!empty($_C_));exit;").
 
 -record(state, {
@@ -51,7 +52,7 @@
 %% API
 %%====================================================================
 start_link(Args, Proc) ->
-	gen_server:start_link({local, Proc}, ?MODULE, Args, []).
+	gen_server:start_link({local, Proc}, ?MODULE, Args, [{spawn_opt, [{fullsweep_after, 2}]}]).
 
 %%====================================================================
 %% gen_server callbacks
@@ -222,7 +223,12 @@ exec_php(Port, Code, Timeout) ->
 		{Port, {exit_status, Status}} ->
 			{exit, Status};
 		{Port, {data, Data}} ->
-			DecodedData = php_decode:decode_data(Data),
+			DecodedData = case php_decode:decode_data(Data) of
+				{error,invalid_json,Pos} ->
+					{exit, {output_parse_error, Data, Pos}};
+				#php_result{} = Decoded -> 
+					Decoded
+			end,
 			Output = DecodedData#php_result.stdout,
 			Error = DecodedData#php_result.stderr,
 			Return = DecodedData#php_result.return,

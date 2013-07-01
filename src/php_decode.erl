@@ -21,7 +21,7 @@ json_decoder() ->
 	jsonx:decoder([{php_result, record_info(fields, php_result)}]).
 
 start_link() ->
-	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [], [{spawn_opt, [{fullsweep_after, 2}]}]).
 
 init(_Opts) ->
 	State = #state{decoder = json_decoder()},
