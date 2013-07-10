@@ -15,7 +15,8 @@
 }).
 
 decode_data(Data) ->
-	gen_server:call(?MODULE, {decode_data, Data}).
+	Decoder = gen_server:call(?MODULE, decoder),
+	Decoder(Data).
 
 json_decoder() ->
 	jsonx:decoder([{php_result, record_info(fields, php_result)}]).
@@ -27,8 +28,8 @@ init(_Opts) ->
 	State = #state{decoder = json_decoder()},
 	{ok, State}.
 
-handle_call({decode_data, Data}, _, #state{decoder = Decoder} = State) ->
-	{reply, Decoder(Data), State}.
+handle_call(decoder, _, #state{decoder = Decoder} = State) ->
+	{reply, Decoder, State}.
 
 handle_cast(_, State) ->
 	{noreply, State}.
