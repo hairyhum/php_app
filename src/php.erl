@@ -46,6 +46,7 @@
 	start/0,
 	stop/0,
 	start_link/0,
+	get_state/0,
 	eval/1, eval/2, eval/3,
 	reserve/0, reserve/1,
 	release/1,
@@ -113,6 +114,14 @@ stop() ->
 %%      the pid of the supervisor so we can discover the workers.
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, self(), []).
+
+
+%% @spec get_state() -> state()
+%% @type state() = #state{}
+%% @doc Get current application state to see running, waiting and 
+%%      restarting php processes.
+get_state() ->
+	gen_server:call(?MODULE, get_state, infinity). 
 
 %% @spec eval(Code) -> result()
 %%       Code = list() | binary()
